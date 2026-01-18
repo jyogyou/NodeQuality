@@ -24,15 +24,12 @@ function start_ascii(){
     echo -ne "\e[1;36m"
     cat <<- EOF
 
+EEEEEEE TTTTTTT DDDDD  AAAAA  TTTTTTT AAAAA
+E          T    D   DD A   A     T    A   A
+EEEEE      T    D   DD AAAAA     T    AAAAA
+E          T    D   DD A   A     T    A   A
+EEEEEEE    T    DDDDD  A   A     T    A   A
 
-███╗   ██╗ ██████╗ ██████╗ ███████╗ ██████╗ ██╗   ██╗ █████╗ ██╗     ██╗████████╗██╗   ██╗
-████╗  ██║██╔═══██╗██╔══██╗██╔════╝██╔═══██╗██║   ██║██╔══██╗██║     ██║╚══██╔══╝╚██╗ ██╔╝
-██╔██╗ ██║██║   ██║██║  ██║█████╗  ██║   ██║██║   ██║███████║██║     ██║   ██║    ╚████╔╝ 
-██║╚██╗██║██║   ██║██║  ██║██╔══╝  ██║▄▄ ██║██║   ██║██╔══██║██║     ██║   ██║     ╚██╔╝  
-██║ ╚████║╚██████╔╝██████╔╝███████╗╚██████╔╝╚██████╔╝██║  ██║███████╗██║   ██║      ██║   
-╚═╝  ╚═══╝ ╚═════╝ ╚═════╝ ╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝      ╚═╝   
-                                                                                          
-                                                                             
 Benchmark script for server, collects basic hardware information, IP quality and network quality
 
 The benchmark will be performed in a temporary system, and all traces will be deleted after that.
