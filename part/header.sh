@@ -8,7 +8,7 @@ cat <<-EOF
                    https://github.com/jyogyou/NodeQuality
         报告时间：$HEADING_DATE  脚本版本：v0.0.1
         联系: https://t.me/hketsp_bot
-        频道: https://t.me/hketdata 网站：https://etdata.link
+        频道: https://t.me/hketdata 网站：https://www.qyt-idc.com
 ########################################################################
 EOF
 echo -ne "\033[0m"

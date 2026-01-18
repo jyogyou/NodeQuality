@@ -35,6 +35,36 @@ $ansiColors = [
     97 => '#ffffff',
 ];
 
+function to_utf8(string $text): string {
+    if (function_exists('mb_detect_encoding')) {
+        $enc = mb_detect_encoding($text, ['UTF-8', 'GBK', 'GB2312', 'BIG5', 'ISO-8859-1'], true);
+        if ($enc && $enc !== 'UTF-8') {
+            return mb_convert_encoding($text, 'UTF-8', $enc);
+        }
+    }
+    return $text;
+}
+
+function normalize_ansi(string $text): string {
+    $text = to_utf8($text);
+    $text = str_replace("\r", '', $text);
+    $text = preg_replace('/\\[([0-9]+(?:;[0-9]+)*)m/', "\x1b[$1m", $text);
+    $text = preg_replace('/\x1b\\[[0-9;?]*[HJK]/', '', $text);
+    $text = preg_replace('/\x1b\\[[0-9;?]*[JK]/', '', $text);
+    $text = preg_replace('/\\[[0-9;?]*[HJK]/', '', $text);
+    $text = preg_replace('/\\[[0-9;?]*[JK]/', '', $text);
+    $text = preg_replace('/^\\[[0-9;?]*[HJK].*$/m', '', $text);
+    $text = preg_replace('/^\\[[0-9;?]*[JK].*$/m', '', $text);
+    $text = preg_replace("/\n{3,}/", "\n\n", $text);
+    return $text;
+}
+
+function strip_ansi(string $text): string {
+    $text = preg_replace('/\x1b\\[[0-9;]*[A-Za-z]/', '', $text);
+    $text = preg_replace('/\\[[0-9;?]*[A-Za-z]/', '', $text);
+    return $text;
+}
+
 function ansi_to_html(string $text, array $colors): string {
     $pattern = "/\x1b\\[[0-9;]*m/";
     $parts = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -162,14 +192,10 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
 
     $sections = [
         'header_info.log' => 'Header',
-        'basic_info.log' => 'Basic',
-        'ip_quality.log' => 'IP Quality',
-        'net_quality.log' => 'Net Quality',
-        'backroute_trace.log' => 'Backroute',
-        'yabs.json' => 'Yabs JSON',
-        'ip_quality.json' => 'IP JSON',
-        'net_quality.json' => 'Net JSON',
-        'backroute_trace.json' => 'Trace JSON',
+        'basic_info.log' => '基本信息',
+        'ip_quality.log' => 'IP质量',
+        'net_quality.log' => '网络质量',
+        'backroute_trace.log' => '回程路由',
     ];
 
     $files = [];
@@ -180,6 +206,7 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
             foreach ($sections as $name => $label) {
                 $content = $zip->getFromName($name);
                 if ($content !== false) {
+                    $content = normalize_ansi($content);
                     $files[$name] = [
                         'label' => $label,
                         'content' => $content,
@@ -196,12 +223,14 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
     $safeId = htmlspecialchars($id, ENT_QUOTES, 'UTF-8');
     $downloadUrl = '/r/' . $safeId . '.zip';
     $hasContent = count($files) > 0;
-    $tabs = $files;
+    $tabs = [];
     if (trim($allContent) !== '') {
-        $tabs = array_merge(
-            ['all.log' => ['label' => 'All', 'content' => $allContent]],
-            $tabs
-        );
+        $tabs['all.log'] = ['label' => '全部', 'content' => $allContent];
+    }
+    foreach (['basic_info.log', 'ip_quality.log', 'net_quality.log', 'backroute_trace.log'] as $key) {
+        if (isset($files[$key])) {
+            $tabs[$key] = $files[$key];
+        }
     }
     $firstTab = $hasContent ? array_key_first($tabs) : '';
 
@@ -227,9 +256,12 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
         . 'box-shadow:var(--shadow-lg);padding:20px;backdrop-filter:blur(6px);}'
         . '.meta{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px;}'
         . '.meta .id{font-weight:600;color:#cbd6ff;}'
+        . '.actions{display:flex;gap:8px;flex-wrap:wrap;}'
         . '.btn{display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;'
         . 'background:var(--color-accent);color:#fff;text-decoration:none;font-weight:600;font-size:14px;}'
         . '.btn:hover{background:var(--color-accent-hover);}'
+        . '.btn-secondary{background:rgba(255,255,255,.12);color:#e6ecff;border:1px solid rgba(255,255,255,.2);}'
+        . '.btn-secondary:hover{background:rgba(255,255,255,.2);}'
         . '.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}'
         . '.tab{padding:6px 12px;border-radius:999px;border:1px solid var(--color-border);background:rgba(255,255,255,.06);'
         . 'color:#e6ecff;cursor:pointer;font-weight:600;font-size:13px;}'
@@ -244,8 +276,11 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
         . '</style></head><body>'
         . '<section class="hero"><h1>易通数据 · 测试结果</h1><p>ETDATA NodeQuality Report</p></section>'
         . '<div class="container"><div class="card">'
-        . '<div class="meta"><div class="id">Result ID: ' . $safeId . '</div>'
-        . '<a class="btn" href="' . $downloadUrl . '">Download ZIP</a></div>';
+        . '<div class="meta"><div class="id">结果ID：' . $safeId . '</div>'
+        . '<div class="actions">'
+        . '<button class="btn btn-secondary" data-copy="all">复制全部</button>'
+        . '<button class="btn btn-secondary" data-copy="current">复制当前</button>'
+        . '</div></div>';
 
     if (!$hasContent) {
         $html .= '<div class="empty">Result parsed failed or ZipArchive missing. Please download the ZIP.</div>';
@@ -261,7 +296,8 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
         foreach ($tabs as $name => $data) {
             $active = ($name === $firstTab) ? ' active' : '';
             $content = ansi_to_html($data['content'], $ansiColors);
-            $html .= '<div class="panel' . $active . '" data-panel="' . $name . '"><div class="terminal"><pre>' . $content . '</pre></div></div>';
+            $rawCopy = htmlspecialchars(strip_ansi($data['content']), ENT_QUOTES, 'UTF-8');
+            $html .= '<div class="panel' . $active . '" data-panel="' . $name . '"><div class="terminal"><pre data-raw="' . $rawCopy . '">' . $content . '</pre></div></div>';
         }
 
         $html .= '<script>'
@@ -273,6 +309,24 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
             . 'var key=btn.getAttribute("data-tab");'
             . 'var panel=document.querySelector(\'[data-panel="\'+key+\'"]\');'
             . 'if(panel){panel.classList.add("active");}'
+            . '});'
+            . '});'
+            . 'function copyText(text){'
+            . 'if(navigator.clipboard&&window.isSecureContext){return navigator.clipboard.writeText(text);}'
+            . 'var ta=document.createElement("textarea");ta.value=text;document.body.appendChild(ta);ta.select();'
+            . 'document.execCommand("copy");document.body.removeChild(ta);return Promise.resolve();}'
+            . 'document.querySelectorAll("[data-copy]").forEach(function(btn){'
+            . 'btn.addEventListener("click", function(){'
+            . 'var mode=btn.getAttribute("data-copy");'
+            . 'var text="";'
+            . 'if(mode==="all"){'
+            . 'var all=document.querySelector(\'[data-panel="all.log"] pre\');'
+            . 'text=all?all.getAttribute("data-raw"):"";'
+            . '}else{'
+            . 'var cur=document.querySelector(".panel.active pre");'
+            . 'text=cur?cur.getAttribute("data-raw"):"";'
+            . '}'
+            . 'copyText(text||"");'
             . '});'
             . '});'
             . '</script>';
