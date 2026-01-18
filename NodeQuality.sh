@@ -2,11 +2,11 @@
 
 current_time="$(date +%Y_%m_%d_%H_%M_%S)"
 work_dir=".nodequality$current_time"
-bench_os_url="https://github.com/LloydAsp/NodeQuality/releases/download/v0.0.1/BenchOs.tar.gz"
-raw_file_prefix="https://raw.githubusercontent.com/LloydAsp/NodeQuality/refs/heads/main"
+bench_os_url="https://github.com/jyogyou/NodeQuality/releases/download/v0.0.1/BenchOs.tar.gz"
+raw_file_prefix="https://raw.githubusercontent.com/jyogyou/NodeQuality/refs/heads/main"
 
 if uname -m | grep -Eq 'arm|aarch64'; then
-    bench_os_url="https://github.com/LloydAsp/NodeQuality/releases/download/v0.0.1/BenchOs-arm.tar.gz"
+    bench_os_url="https://github.com/jyogyou/NodeQuality/releases/download/v0.0.1/BenchOs-arm.tar.gz"
 fi
 
 header_info_filename=header_info.log
@@ -38,9 +38,9 @@ Benchmark script for server, collects basic hardware information, IP quality and
 The benchmark will be performed in a temporary system, and all traces will be deleted after that.
 Therefore, it has no impact on the original environment and supports almost all linux systems.
 
-Author: Lloyd@nodeseek.com
-Github: github.com/LloydAsp/NodeQuality
-Command: bash <(curl -sL https://run.NodeQuality.com)
+Author: ETDATA
+Github: github.com/jyogyou/NodeQuality
+Command: bash <(curl -sL https://test.etdata.link)
 
 	EOF
     echo -ne "\033[0m"
@@ -171,7 +171,7 @@ function run_net_trace(){
     chroot_run bash <(curl -Ls Net.Check.Place) -R -n -S 123 -o /result/$backroute_trace_json_filename
 }
 
-uploadAPI="https://api.nodequality.com/api/v1/record"
+uploadAPI="https://test.etdata.link/api/v1/record"
 function upload_result(){
 
     chroot_run zip -j - "/result/*" > $work_dir/result.zip

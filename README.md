@@ -1,7 +1,9 @@
-# NodeQuality
+# ETDATA NodeQuality
 在沙箱环境中运行vps测试脚本，并排版测试结果
 
 本项目本质上是测试工具集合的**前置加载器和结果后处理**项目。把服务器测试工作的流程给规范化自动化了。
+品牌：易通数据（ETDATA），网站：https://etdata.link
+联系：https://t.me/hketsp_bot  频道：https://t.me/hketdata
 让测试仅仅是测试，不要留下一堆痕迹；让测试可以更舒服省心，自动排版截图。
 
 ## 特性总结
@@ -12,7 +14,7 @@
 
 使用命令为：
 ```
-bash <(curl -sL https://run.NodeQuality.com)
+bash <(curl -sL https://test.etdata.link)
 ```
 ## 沙箱隔离，无痕测试
 测试脚本往往需要加载很多软件和工具，符合**把各种专用工具串起来解决问题的linux哲学**。 为了减少测试过程中安装的软件和产生的临时文件占用空间，将所有测试放在**BenchOS**内。 chroot特别适合作为测试脚本的沙箱工具，因为其**不用额外安装、极致的轻量、只有文件隔离而没有网络和内存隔离**。
@@ -28,7 +30,7 @@ bash <(curl -sL https://run.NodeQuality.com)
 配套提供一个**现代化**的网页粘贴板和排版工具，保留了原有的文本高亮。
 IP质量 和 网络质量 的结果自动截图，预留一定的边距，使其更加美观。
 
-[预览地址](https://nodequality.com/r/IHfGBj2jD8OT7BqBNUbCWTWV3XRIbpMB)
+[预览地址](https://test.etdata.link)
 
 ## “拼好脚本”，减少重复测试
 
