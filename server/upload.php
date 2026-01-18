@@ -35,6 +35,25 @@ $ansiColors = [
     97 => '#ffffff',
 ];
 
+$ansiBgColors = [
+    40 => '#1a1a1a',
+    41 => '#ff5c57',
+    42 => '#5af78e',
+    43 => '#f3f99d',
+    44 => '#57c7ff',
+    45 => '#ff6ac1',
+    46 => '#9aedfe',
+    47 => '#f1f1f0',
+    100 => '#4d4d4d',
+    101 => '#ff6e67',
+    102 => '#5af78e',
+    103 => '#f3f99d',
+    104 => '#57c7ff',
+    105 => '#ff6ac1',
+    106 => '#9aedfe',
+    107 => '#ffffff',
+];
+
 function to_utf8(string $text): string {
     if (function_exists('mb_detect_encoding')) {
         $enc = mb_detect_encoding($text, ['UTF-8', 'GBK', 'GB2312', 'BIG5', 'ISO-8859-1'], true);
@@ -55,6 +74,7 @@ function normalize_ansi(string $text): string {
     $text = preg_replace('/\\[[0-9;?]*[JK]/', '', $text);
     $text = preg_replace('/^\\[[0-9;?]*[HJK].*$/m', '', $text);
     $text = preg_replace('/^\\[[0-9;?]*[JK].*$/m', '', $text);
+    $text = preg_replace('/^[ \t]+$/m', '', $text);
     $text = preg_replace("/\n{3,}/", "\n\n", $text);
     return $text;
 }
@@ -65,7 +85,17 @@ function strip_ansi(string $text): string {
     return $text;
 }
 
-function ansi_to_html(string $text, array $colors): string {
+function extract_svg_links(string $text): array {
+    $links = [];
+    if (preg_match_all('#https?://Report\.Check\.Place/(?:ip|net)/[A-Za-z0-9]+\.svg#', $text, $m)) {
+        foreach ($m[0] as $url) {
+            $links[$url] = true;
+        }
+    }
+    return array_keys($links);
+}
+
+function ansi_to_html(string $text, array $colors, array $bgColors): string {
     $pattern = "/\x1b\\[[0-9;]*m/";
     $parts = preg_split($pattern, $text, -1, PREG_SPLIT_DELIM_CAPTURE);
     $style = [
@@ -74,6 +104,7 @@ function ansi_to_html(string $text, array $colors): string {
         'italic' => false,
         'underline' => false,
         'dim' => false,
+        'bg' => null,
     ];
     $out = '';
     foreach ($parts as $part) {
@@ -86,7 +117,7 @@ function ansi_to_html(string $text, array $colors): string {
             foreach ($codes as $code) {
                 $c = (int)$code;
                 if ($c === 0) {
-                    $style = ['color' => null, 'bold' => false, 'italic' => false, 'underline' => false, 'dim' => false];
+                    $style = ['color' => null, 'bold' => false, 'italic' => false, 'underline' => false, 'dim' => false, 'bg' => null];
                 } elseif ($c === 1) {
                     $style['bold'] = true;
                 } elseif ($c === 2) {
@@ -104,8 +135,12 @@ function ansi_to_html(string $text, array $colors): string {
                     $style['underline'] = false;
                 } elseif ($c === 39) {
                     $style['color'] = null;
+                } elseif ($c === 49) {
+                    $style['bg'] = null;
                 } elseif (isset($colors[$c])) {
                     $style['color'] = $colors[$c];
+                } elseif (isset($bgColors[$c])) {
+                    $style['bg'] = $bgColors[$c];
                 }
             }
             continue;
@@ -115,6 +150,9 @@ function ansi_to_html(string $text, array $colors): string {
         $styleParts = [];
         if ($style['color']) {
             $styleParts[] = 'color:' . $style['color'];
+        }
+        if ($style['bg']) {
+            $styleParts[] = 'background-color:' . $style['bg'];
         }
         if ($style['bold']) {
             $styleParts[] = 'font-weight:700';
@@ -210,6 +248,7 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
                     $files[$name] = [
                         'label' => $label,
                         'content' => $content,
+                        'links' => extract_svg_links($content),
                     ];
                     if (substr($name, -4) === '.log') {
                         $allContent .= $content . "\n\n";
@@ -268,10 +307,15 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
         . '.tab.active{background:#0f1a4d;color:#fff;border-color:#2f8bff;}'
         . '.panel{display:none;}'
         . '.panel.active{display:block;}'
+        . '.report-links{display:grid;gap:12px;margin-bottom:12px;}'
+        . '.report-item{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px;}'
+        . '.report-link{display:inline-flex;margin-bottom:8px;color:#8ab4ff;text-decoration:none;font-weight:600;}'
+        . '.report-link:hover{text-decoration:underline;}'
+        . '.report-svg{width:100%;height:auto;display:block;border-radius:8px;background:#0b1024;}'
         . '.terminal{background:#0b1024;border:1px solid rgba(255,255,255,.08);border-radius:12px;'
         . 'padding:12px;max-height:70vh;overflow:auto;resize:vertical;}'
-        . 'pre{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;'
-        . 'font-size:13px;line-height:1.5;color:#dbe4ff;white-space:pre;}'
+        . 'pre{margin:0;font-family:"Noto Sans Mono","Noto Sans Symbols2","Segoe UI Symbol",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;'
+        . 'font-size:13px;line-height:1.45;color:#dbe4ff;white-space:pre;}'
         . '.empty{padding:20px;text-align:center;color:var(--color-text-muted);}'
         . '</style></head><body>'
         . '<section class="hero"><h1>易通数据 · 测试结果</h1><p>ETDATA NodeQuality Report</p></section>'
@@ -295,9 +339,21 @@ if ($method === 'GET' && is_string($path) && strpos($path, '/r/') === 0) {
 
         foreach ($tabs as $name => $data) {
             $active = ($name === $firstTab) ? ' active' : '';
-            $content = ansi_to_html($data['content'], $ansiColors);
+            $content = ansi_to_html($data['content'], $ansiColors, $ansiBgColors);
             $rawCopy = htmlspecialchars(strip_ansi($data['content']), ENT_QUOTES, 'UTF-8');
-            $html .= '<div class="panel' . $active . '" data-panel="' . $name . '"><div class="terminal"><pre data-raw="' . $rawCopy . '">' . $content . '</pre></div></div>';
+            $html .= '<div class="panel' . $active . '" data-panel="' . $name . '">';
+            if (!empty($data['links'])) {
+                $html .= '<div class="report-links">';
+                foreach ($data['links'] as $link) {
+                    $safeLink = htmlspecialchars($link, ENT_QUOTES, 'UTF-8');
+                    $html .= '<div class="report-item">'
+                        . '<a class="report-link" href="' . $safeLink . '" target="_blank" rel="noopener">打开 SVG 报告</a>'
+                        . '<img class="report-svg" src="' . $safeLink . '" alt="Report SVG" loading="lazy" />'
+                        . '</div>';
+                }
+                $html .= '</div>';
+            }
+            $html .= '<div class="terminal"><pre data-raw="' . $rawCopy . '">' . $content . '</pre></div></div>';
         }
 
         $html .= '<script>'
