@@ -42,10 +42,10 @@ elif [[ $ARCH = *aarch* || $ARCH = *arm* ]]; then
 		# host is running an ARM 32-bit kernel
 		ARCH="arm"
 	fi
-	echo -e "\nARM compatibility is considered *experimental*"
+	echo -e "\nARM 兼容性仍处于*实验阶段*"
 else
 	# host is running a non-supported kernel
-	echo -e "Architecture not supported by YABS."
+	echo -e "当前架构不被 YABS 支持。"
 	exit 1
 fi
 
@@ -109,71 +109,69 @@ IPV4_CHECK=$( (ping -4 -c 1 -W 4 ipv4.google.com >/dev/null 2>&1 && echo true) |
 IPV6_CHECK=$( (ping -6 -c 1 -W 4 ipv6.google.com >/dev/null 2>&1 && echo true) || $IP_CHECK_CMD -6 icanhazip.com 2> /dev/null)
 if [[ -z "$IPV4_CHECK" && -z "$IPV6_CHECK" ]]; then
 	echo -e
-	echo -e "Warning: Both IPv4 AND IPv6 connectivity were not detected. Check for DNS issues..."
+	echo -e "警告：未检测到 IPv4 和 IPv6 连通性，请检查 DNS 设置..."
 fi
 
 # print help and exit script, if help flag was passed
 if [ -n "$PRINT_HELP" ]; then
 	echo -e
-	echo -e "Usage: ./yabs.sh [-flags]"
+	echo -e "用法: ./yabs.sh [-参数]"
 	echo -e "       curl -sL yabs.sh | bash"
-	echo -e "       curl -sL yabs.sh | bash -s -- -flags"
+	echo -e "       curl -sL yabs.sh | bash -s -- -参数"
 	echo -e "       wget -qO- yabs.sh | bash"
-	echo -e "       wget -qO- yabs.sh | bash -s -- -flags"
+	echo -e "       wget -qO- yabs.sh | bash -s -- -参数"
 	echo -e
-	echo -e "Flags:"
-	echo -e "       -b : prefer pre-compiled binaries from repo over local packages"
-	echo -e "       -f/d : skips the fio disk benchmark test"
-	echo -e "       -i : skips the iperf network test"
-	echo -e "       -g : skips the geekbench performance test"
-	echo -e "       -n : skips the network information lookup and print out"
-	echo -e "       -h : prints this lovely message, shows any flags you passed,"
-	echo -e "            shows if fio/iperf3 local packages have been detected,"
-	echo -e "            then exits"
-	echo -e "       -r : reduce number of iperf3 network locations (to only three)"
-	echo -e "            to lessen bandwidth usage"
-	echo -e "       -4 : use geekbench 4 instead of geekbench 6"
-	echo -e "       -5 : use geekbench 5 instead of geekbench 6"
-	echo -e "       -9 : use both geekbench 4 AND geekbench 5 instead of geekbench 6"
-	echo -e "       -6 : use geekbench 6 in addition to 4 and/or 5 (only needed if -4, -5, or -9 are set; -6 must come last)"
-	echo -e "       -j : print jsonified YABS results at conclusion of test"
-	echo -e "       -w <filename> : write jsonified YABS results to disk using file name provided"
-	echo -e "       -s <url> : send jsonified YABS results to URL"
+	echo -e "参数:"
+	echo -e "       -b : 优先使用仓库里的预编译二进制而非本地包"
+	echo -e "       -f/d : 跳过 fio 磁盘测试"
+	echo -e "       -i : 跳过 iperf 网络测试"
+	echo -e "       -g : 跳过 geekbench 性能测试"
+	echo -e "       -n : 跳过网络信息查询与输出"
+	echo -e "       -h : 输出帮助信息及已检测到的本地依赖"
+	echo -e "       -r : 减少 iperf3 测试节点数量（仅三处）"
+	echo -e "            以减少带宽占用"
+	echo -e "       -4 : 使用 geekbench 4（替代 6）"
+	echo -e "       -5 : 使用 geekbench 5（替代 6）"
+	echo -e "       -9 : 同时使用 geekbench 4 和 5（替代 6）"
+	echo -e "       -6 : 在 4/5 基础上额外使用 geekbench 6"
+	echo -e "       -j : 在测试结束时输出 JSON 结果"
+	echo -e "       -w <filename> : 将 JSON 结果写入指定文件"
+	echo -e "       -s <url> : 将 JSON 结果发送到指定 URL"
 	echo -e
-	echo -e "Detected Arch: $ARCH"
+	echo -e "检测到架构: $ARCH"
 	echo -e
-	echo -e "Detected Flags:"
-	[[ -n $PREFER_BIN ]] && echo -e "       -b, force using precompiled binaries from repo"
-	[[ -n $SKIP_FIO ]] && echo -e "       -f/d, skipping fio disk benchmark test"
-	[[ -n $SKIP_IPERF ]] && echo -e "       -i, skipping iperf network test"
-	[[ -n $SKIP_GEEKBENCH ]] && echo -e "       -g, skipping geekbench test"
-	[[ -n $SKIP_NET ]] && echo -e "       -n, skipping network info lookup and print out"
-	[[ -n $REDUCE_NET ]] && echo -e "       -r, using reduced (3) iperf3 locations"
-	[[ -n $GEEKBENCH_4 ]] && echo -e "       running geekbench 4"
-	[[ -n $GEEKBENCH_5 ]] && echo -e "       running geekbench 5"
-	[[ -n $GEEKBENCH_6 ]] && echo -e "       running geekbench 6"
+	echo -e "已检测到的参数:"
+	[[ -n $PREFER_BIN ]] && echo -e "       -b, 强制使用预编译二进制"
+	[[ -n $SKIP_FIO ]] && echo -e "       -f/d, 跳过 fio 磁盘测试"
+	[[ -n $SKIP_IPERF ]] && echo -e "       -i, 跳过 iperf 网络测试"
+	[[ -n $SKIP_GEEKBENCH ]] && echo -e "       -g, 跳过 geekbench 测试"
+	[[ -n $SKIP_NET ]] && echo -e "       -n, 跳过网络信息查询与输出"
+	[[ -n $REDUCE_NET ]] && echo -e "       -r, 使用精简 iperf3 节点（3 个）"
+	[[ -n $GEEKBENCH_4 ]] && echo -e "       使用 geekbench 4"
+	[[ -n $GEEKBENCH_5 ]] && echo -e "       使用 geekbench 5"
+	[[ -n $GEEKBENCH_6 ]] && echo -e "       使用 geekbench 6"
 	echo -e
-	echo -e "Local Binary Check:"
-	[[ -z $LOCAL_FIO ]] && echo -e "       fio not detected, will download precompiled binary" ||
-		[[ -z $PREFER_BIN ]] && echo -e "       fio detected, using local package" ||
-		echo -e "       fio detected, but using precompiled binary instead"
-	[[ -z $LOCAL_IPERF ]] && echo -e "       iperf3 not detected, will download precompiled binary" ||
-		[[ -z $PREFER_BIN ]] && echo -e "       iperf3 detected, using local package" ||
-		echo -e "       iperf3 detected, but using precompiled binary instead"
+	echo -e "本地依赖检测:"
+	[[ -z $LOCAL_FIO ]] && echo -e "       未检测到 fio，将下载预编译二进制" ||
+		[[ -z $PREFER_BIN ]] && echo -e "       检测到 fio，使用本地包" ||
+		echo -e "       检测到 fio，但将使用预编译二进制"
+	[[ -z $LOCAL_IPERF ]] && echo -e "       未检测到 iperf3，将下载预编译二进制" ||
+		[[ -z $PREFER_BIN ]] && echo -e "       检测到 iperf3，使用本地包" ||
+		echo -e "       检测到 iperf3，但将使用预编译二进制"
 	echo -e
-	echo -e "Detected Connectivity:"
-	[[ -n $IPV4_CHECK ]] && echo -e "       IPv4 connected" ||
-		echo -e "       IPv4 not connected"
-	[[ -n $IPV6_CHECK ]] && echo -e "       IPv6 connected" ||
-		echo -e "       IPv6 not connected"
+	echo -e "网络连通性检测:"
+	[[ -n $IPV4_CHECK ]] && echo -e "       IPv4 已连通" ||
+		echo -e "       IPv4 未连通"
+	[[ -n $IPV6_CHECK ]] && echo -e "       IPv6 已连通" ||
+		echo -e "       IPv6 未连通"
 	echo -e
-	echo -e "JSON Options:"
-	[[ -z $JSON ]] && echo -e "       none"
-	[[ $JSON = *j* ]] && echo -e "       printing json to screen after test"
-	[[ $JSON = *w* ]] && echo -e "       writing json to file ($JSON_FILE) after test"
-	[[ $JSON = *s* ]] && echo -e "       sharing json YABS results to $JSON_SEND" 
+	echo -e "JSON 选项:"
+	[[ -z $JSON ]] && echo -e "       无"
+	[[ $JSON = *j* ]] && echo -e "       测试结束后输出 JSON"
+	[[ $JSON = *w* ]] && echo -e "       测试结束后写入 JSON 文件 ($JSON_FILE)"
+	[[ $JSON = *s* ]] && echo -e "       将 JSON 结果上传至 $JSON_SEND" 
 	echo -e
-	echo -e "Exiting..."
+	echo -e "已退出..."
 
 	exit 0
 fi
@@ -219,10 +217,10 @@ function format_size {
 
 # gather basic system information (inc. CPU, AES-NI/virt status, RAM + swap + disk size)
 echo -e 
-echo -e "Basic System Information:"
+echo -e "基础系统信息："
 echo -e "---------------------------------"
 UPTIME=$(uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7=="min") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0,"days,",h+0,"hours,",m+0,"minutes"}')
-echo -e "Uptime     : $UPTIME"
+echo -e "运行时间   : $UPTIME"
 # check for local lscpu installs
 if command -v lscpu >/dev/null 2>&1; then
   LOCAL_LSCPU=true
@@ -234,7 +232,7 @@ if [[ $ARCH = *aarch64* || $ARCH = *arm* ]] && [[ -n $LOCAL_LSCPU ]]; then
 else
 	CPU_PROC=$(awk -F: '/model name/ {name=$2} END {print name}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
 fi
-echo -e "Processor  : $CPU_PROC"
+echo -e "处理器     : $CPU_PROC"
 if [[ $ARCH = *aarch64* || $ARCH = *arm* ]] && [[ -n $LOCAL_LSCPU ]]; then
 	CPU_CORES=$(lscpu | grep "^[[:blank:]]*CPU(s):" | sed 's/CPU(s): *//g')
 	CPU_FREQ=$(lscpu | grep "CPU max MHz" | sed 's/CPU max MHz: *//g')
@@ -244,34 +242,34 @@ else
 	CPU_CORES=$(awk -F: '/model name/ {core++} END {print core}' /proc/cpuinfo)
 	CPU_FREQ=$(awk -F: ' /cpu MHz/ {freq=$2} END {print freq " MHz"}' /proc/cpuinfo | sed 's/^[ \t]*//;s/[ \t]*$//')
 fi
-echo -e "CPU cores  : $CPU_CORES @ $CPU_FREQ"
+echo -e "CPU 核心   : $CPU_CORES @ $CPU_FREQ"
 CPU_AES=$(grep aes /proc/cpuinfo)
 [[ -z "$CPU_AES" ]] && CPU_AES="\xE2\x9D\x8C Disabled" || CPU_AES="\xE2\x9C\x94 Enabled"
 echo -e "AES-NI     : $CPU_AES"
 CPU_VIRT=$(grep 'vmx\|svm' /proc/cpuinfo)
 [[ -z "$CPU_VIRT" ]] && CPU_VIRT="\xE2\x9D\x8C Disabled" || CPU_VIRT="\xE2\x9C\x94 Enabled"
-echo -e "VM-x/AMD-V : $CPU_VIRT"
+echo -e "虚拟化扩展 : $CPU_VIRT"
 TOTAL_RAM_RAW=$(free | awk 'NR==2 {print $2}')
 TOTAL_RAM=$(format_size "$TOTAL_RAM_RAW")
-echo -e "RAM        : $TOTAL_RAM"
+echo -e "内存       : $TOTAL_RAM"
 TOTAL_SWAP_RAW=$(free | grep Swap | awk '{ print $2 }')
 TOTAL_SWAP=$(format_size "$TOTAL_SWAP_RAW")
-echo -e "Swap       : $TOTAL_SWAP"
+echo -e "交换分区   : $TOTAL_SWAP"
 RAM_PLUS_SWAP="$(( TOTAL_RAM_RAW + TOTAL_SWAP_RAW ))"
 # total disk size is calculated by adding all partitions of the types listed below (after the -t flags)
 TOTAL_DISK_RAW=$(lsblk -d -n -o SIZE --bytes | awk '{sum+=$1} END {printf "%.0f\n", sum}' | numfmt --to-unit=1024)
 TOTAL_DISK=$(format_size "$TOTAL_DISK_RAW")
-echo -e "Disk       : $TOTAL_DISK"
+echo -e "磁盘       : $TOTAL_DISK"
 DISTRO=$(grep 'PRETTY_NAME' /etc/os-release | cut -d '"' -f 2 )
-echo -e "Distro     : $DISTRO"
+echo -e "系统       : $DISTRO"
 KERNEL=$(uname -r)
-echo -e "Kernel     : $KERNEL"
+echo -e "内核       : $KERNEL"
 VIRT=$(dmidecode -s system-product-name 2> /dev/null || virt-what | grep -v redhat | head -n 1 || echo "none")
 #VIRT=$(virt-what | grep -v redhat | head -n 1 || echo "none")
 VIRT=${VIRT^^} || VIRT="UNKNOWN"
-echo -e "VM Type    : $VIRT"
-[[ -z "$IPV4_CHECK" ]] && ONLINE="\xE2\x9D\x8C Offline / " || ONLINE="\xE2\x9C\x94 Online / "
-[[ -z "$IPV6_CHECK" ]] && ONLINE+="\xE2\x9D\x8C Offline" || ONLINE+="\xE2\x9C\x94 Online"
+echo -e "虚拟化类型 : $VIRT"
+[[ -z "$IPV4_CHECK" ]] && ONLINE="\xE2\x9D\x8C 离线 / " || ONLINE="\xE2\x9C\x94 在线 / "
+[[ -z "$IPV6_CHECK" ]] && ONLINE+="\xE2\x9D\x8C 离线" || ONLINE+="\xE2\x9C\x94 在线"
 echo -e "IPv4/IPv6  : $ONLINE"
 
 # Function to get information from IP Address using ip-api.com free API
@@ -302,27 +300,27 @@ function ip_info() {
 	as=$(echo "$response" | sed -e 's/[{}]/''/g' | awk -v RS=',"' -F: '/^as/ {print $2}' | sed 's/^"\(.*\)"$/\1/')
 	
 	echo
-	echo "$net_type Network Information:"
+	echo "$net_type 网络信息："
 	echo "---------------------------------"
 
 	if [[ -n "$isp" ]]; then
 		echo "ISP        : $isp"
 	else
-		echo "ISP        : Unknown"
+		echo "ISP        : 未知"
 	fi
 	if [[ -n "$as" ]]; then
 		echo "ASN        : $as"
 	else
-		echo "ASN        : Unknown"
+		echo "ASN        : 未知"
 	fi
 	if [[ -n "$org" ]]; then
-		echo "Host       : $org"
+		echo "组织       : $org"
 	fi
 	if [[ -n "$city" && -n "$region" ]]; then
-		echo "Location   : $city, $region ($region_code)"
+		echo "位置       : $city, $region ($region_code)"
 	fi
 	if [[ -n "$country" ]]; then
-		echo "Country    : $country"
+		echo "国家/地区  : $country"
 	fi 
 
 	[[ -n $JSON ]] && JSON_RESULT+=',"ip_info":{"protocol":"'$net_type'","isp":"'$isp'","asn":"'$as'","org":"'$org'","city":"'$city'","region":"'$region'","region_code":"'$region_code'","country":"'$country'"}'
@@ -458,7 +456,7 @@ function disk_test {
 
 	for BS in "${BLOCK_SIZES[@]}"; do
 		# run rand read/write mixed fio test with block size = $BS
-		echo -en "Running fio random mixed R+W disk test with $BS block size..."
+	echo -en "正在运行 fio 混合读写测试（块大小 $BS）..."
 		DISK_TEST=$(timeout 35 "$FIO_CMD" --name=rand_rw_"$BS" --ioengine=libaio --rw=randrw --rwmixread=50 --bs="$BS" --iodepth=64 --numjobs=2 --size="$FIO_SIZE" --runtime=30 --gtod_reduce=1 --direct=1 --filename="$DISK_PATH/test.fio" --group_reporting --minimal 2> /dev/null | grep rand_rw_"$BS")
 		DISK_IOPS_R=$(echo "$DISK_TEST" | awk -F';' '{print $8}')
 		DISK_IOPS_W=$(echo "$DISK_TEST" | awk -F';' '{print $49}')
@@ -570,11 +568,11 @@ elif [ -z "$SKIP_FIO" ]; then
 		fi
 
 		if [[ $warning -eq 1 ]];then
-			echo -en "\nWarning! You are running YABS on a ZFS Filesystem and your disk space is too low for the fio test. Your test results will be inaccurate. You need at least $mul_spa GB free in order to complete this test accurately. For more information, please see https://github.com/masonr/yet-another-bench-script/issues/13\n"
+			echo -en "\n警告：检测到 ZFS 文件系统且磁盘空间不足以运行 fio 测试，结果可能不准确。至少需要 $mul_spa GB 可用空间。更多信息：https://github.com/masonr/yet-another-bench-script/issues/13\n"
 		fi
 	fi
 	
-	echo -en "\nPreparing system for disk tests..."
+echo -en "\n正在为磁盘测试做准备..."
 
 	# create temp directory to store disk write/read test files
 	DISK_PATH=$YABS_PATH/disk
@@ -592,7 +590,7 @@ elif [ -z "$SKIP_FIO" ]; then
 
 		if [ ! -f "$DISK_PATH/fio" ]; then # ensure fio binary download successfully
 			echo -en "\r\033[0K"
-			echo -e "Fio binary download failed. Running dd test as fallback...."
+			echo -e "fio 二进制下载失败，改用 dd 测试作为备用..."
 			DD_FALLBACK=True
 		else
 			chmod +x "$DISK_PATH/fio"
@@ -614,7 +612,7 @@ elif [ -z "$SKIP_FIO" ]; then
 
 	if [[ -n "$DD_FALLBACK" || ${#DISK_RESULTS[@]} -eq 0 ]]; then # fio download failed or test was killed or returned an error, run dd test instead
 		if [ -z "$DD_FALLBACK" ]; then # print error notice if ended up here due to fio error
-			echo -e "fio disk speed tests failed. Run manually to determine cause.\nRunning dd test as fallback..."
+			echo -e "fio 磁盘测试失败，请手动排查原因。\n改用 dd 测试作为备用..."
 		fi
 
 		dd_test
@@ -635,9 +633,9 @@ elif [ -z "$SKIP_FIO" ]; then
 
 		# print dd sequential disk speed test results
 		echo -e
-		echo -e "dd Sequential Disk Speed Tests:"
+		echo -e "dd 顺序磁盘测试："
 		echo -e "---------------------------------"
-		printf "%-6s | %-6s %-4s | %-6s %-4s | %-6s %-4s | %-6s %-4s\n" "" "Test 1" "" "Test 2" ""  "Test 3" "" "Avg" ""
+		printf "%-6s | %-6s %-4s | %-6s %-4s | %-6s %-4s | %-6s %-4s\n" "" "测试1" "" "测试2" ""  "测试3" "" "平均" ""
 		printf "%-6s | %-6s %-4s | %-6s %-4s | %-6s %-4s | %-6s %-4s\n" "" "" "" "" "" "" "" "" ""
 		printf "%-6s | %-11s | %-11s | %-11s | %-6.2f %-4s\n" "Write" "${DISK_WRITE_TEST_RES[0]}" "${DISK_WRITE_TEST_RES[1]}" "${DISK_WRITE_TEST_RES[2]}" "${DISK_WRITE_TEST_AVG}" "${DISK_WRITE_TEST_UNIT}" 
 		printf "%-6s | %-11s | %-11s | %-11s | %-6.2f %-4s\n" "Read" "${DISK_READ_TEST_RES[0]}" "${DISK_READ_TEST_RES[1]}" "${DISK_READ_TEST_RES[2]}" "${DISK_READ_TEST_AVG}" "${DISK_READ_TEST_UNIT}" 
@@ -648,7 +646,7 @@ elif [ -z "$SKIP_FIO" ]; then
 		DISK_COUNT=0
 
 		# print disk speed test results
-		echo -e "fio Disk Speed Tests (Mixed R/W 50/50) (Partition $CURRENT_PARTITION):"
+		echo -e "fio 磁盘速度测试（混合读写 50/50）（分区 $CURRENT_PARTITION）："
 		echo -e "---------------------------------"
 
 		while [[ $DISK_COUNT -lt $DISK_RESULTS_NUM ]] ; do
@@ -761,7 +759,7 @@ function launch_iperf {
 
 	# print iperf3 network speed results as they are completed
 	echo -e
-	echo -e "iperf3 Network Speed Tests ($MODE):"
+echo -e "iperf3 网络速度测试（$MODE）："
 	echo -e "---------------------------------"
 	printf "%-15s | %-25s | %-15s | %-15s | %-15s\n" "Provider" "Location (Link)" "Send Speed" "Recv Speed" "Ping"
 	printf "%-15s | %-25s | %-15s | %-15s | %-15s\n" "-----" "-----" "----" "----" "----"
@@ -880,17 +878,17 @@ function launch_geekbench {
 	[[ -n $LOCAL_CURL ]] && DL_CMD="curl -s" || DL_CMD="wget -qO-"
 
 	if [[ $VERSION == *4* && ($ARCH = *aarch64* || $ARCH = *arm*) ]]; then
-		echo -e "\nARM architecture not supported by Geekbench 4, use Geekbench 5 or 6."
+		echo -e "\nARM 架构不支持 Geekbench 4，请使用 Geekbench 5 或 6。"
 	elif [[ $VERSION == *4* && $ARCH != *aarch64* && $ARCH != *arm* ]]; then # Geekbench v4
 		GB_URL="https://cdn.geekbench.com/Geekbench-4.4.4-Linux.tar.gz"
 		[[ "$ARCH" == *"x86"* ]] && GB_CMD="geekbench_x86_32" || GB_CMD="geekbench4"
 		GB_RUN="True"
 	elif [[ $VERSION == *5* || $VERSION == *6* ]]; then # Geekbench v5/6
 		if [[ $ARCH = *x86* && $GEEKBENCH_4 == *False* ]]; then # don't run Geekbench 5 if on 32-bit arch
-			echo -e "\nGeekbench $VERSION cannot run on 32-bit architectures. Re-run with -4 flag to use"
-			echo -e "Geekbench 4, which can support 32-bit architectures. Skipping Geekbench $VERSION."
+			echo -e "\nGeekbench $VERSION 无法在 32 位架构运行，请使用 -4 参数运行 Geekbench 4。"
+			echo -e "已跳过 Geekbench $VERSION。"
 		elif [[ $ARCH = *x86* && $GEEKBENCH_4 == *True* ]]; then
-			echo -e "\nGeekbench $VERSION cannot run on 32-bit architectures. Skipping test."
+			echo -e "\nGeekbench $VERSION 无法在 32 位架构运行，已跳过测试。"
 		else
 			if [[ $VERSION == *5* ]]; then # Geekbench v5
 				[[ $ARCH = *aarch64* || $ARCH = *arm* ]] && GB_URL="https://cdn.geekbench.com/Geekbench-5.5.1-LinuxARMPreview.tar.gz" \
@@ -906,7 +904,7 @@ function launch_geekbench {
 	fi
 
 	if [[ $GB_RUN == *True* ]]; then # run GB test
-		echo -en "\nRunning GB$VERSION benchmark test... *cue elevator music*"
+		echo -en "\n正在运行 GB$VERSION 性能测试，耗时较长，请耐心等待..."
 
 		# check for local geekbench installed
 		if command -v "$GB_CMD" &>/dev/null; then
@@ -926,17 +924,17 @@ function launch_geekbench {
 		if [ -z "$GEEKBENCH_TEST" ]; then
 			# detect if CentOS 7 and print a more helpful error message
 			if grep -q "CentOS Linux 7" /etc/os-release; then
-				echo -e "\r\033[0K CentOS 7 and Geekbench have known issues relating to glibc (see issue #71 for details)"
+				echo -e "\r\033[0K CentOS 7 与 Geekbench 在 glibc 上存在已知问题（见 issue #71）"
 			fi
 			if [[ -z "$IPV4_CHECK" ]]; then
 				# Geekbench test failed to download because host lacks IPv4 (cdn.geekbench.com = IPv4 only)
-				echo -e "\r\033[0KGeekbench releases can only be downloaded over IPv4. FTP the Geekbench files and run manually."
+				echo -e "\r\033[0KGeekbench 只能通过 IPv4 下载，请手动上传文件后运行。"
 			elif [[ $VERSION != *4* && $RAM_PLUS_SWAP -le 1048576 ]]; then
 				# Geekbench 5/6 test failed with low memory (<=1GB)
-				echo -e "\r\033[0KGeekbench test failed and low memory was detected. Add at least 1GB of SWAP or use GB4 instead (higher compatibility with low memory systems)."
+				echo -e "\r\033[0KGeekbench 测试失败，内存不足。请添加至少 1GB SWAP 或改用 GB4。"
 			elif [[ $ARCH != *x86* ]]; then
 				# if the Geekbench test failed for any other reason, exit cleanly and print error message
-				echo -e "\r\033[0KGeekbench $VERSION test failed. Run manually to determine cause."
+				echo -e "\r\033[0KGeekbench $VERSION 测试失败，请手动排查原因。"
 			fi
 		else
 			# if the Geekbench test succeeded, parse the test results URL
@@ -953,13 +951,13 @@ function launch_geekbench {
 		
 			# print the Geekbench results
 			echo -en "\r\033[0K"
-			echo -e "Geekbench $VERSION Benchmark Test:"
+			echo -e "Geekbench $VERSION 性能测试："
 			echo -e "---------------------------------"
-			printf "%-15s | %-30s\n" "Test" "Value"
+			printf "%-15s | %-30s\n" "项目" "结果"
 			printf "%-15s | %-30s\n" "" ""
-			printf "%-15s | %-30s\n" "Single Core" "$GEEKBENCH_SCORES_SINGLE"
-			printf "%-15s | %-30s\n" "Multi Core" "$GEEKBENCH_SCORES_MULTI"
-			printf "%-15s | %-30s\n" "Full Test" "$GEEKBENCH_URL"
+			printf "%-15s | %-30s\n" "单核" "$GEEKBENCH_SCORES_SINGLE"
+			printf "%-15s | %-30s\n" "多核" "$GEEKBENCH_SCORES_MULTI"
+			printf "%-15s | %-30s\n" "完整报告" "$GEEKBENCH_URL"
 
 			if [[ -n $JSON ]]; then
 				JSON_RESULT+='{"version":'$VERSION',"single":'$GEEKBENCH_SCORES_SINGLE',"multi":'$GEEKBENCH_SCORES_MULTI

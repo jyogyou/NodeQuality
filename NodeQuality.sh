@@ -30,14 +30,14 @@ EEEEE      T    D   DD AAAAA     T    AAAAA
 E          T    D   DD A   A     T    A   A
 EEEEEEE    T    DDDDD  A   A     T    A   A
 
-Benchmark script for server, collects basic hardware information, IP quality and network quality
+服务器基准测试脚本，采集基础硬件信息、IP质量与网络质量
 
-The benchmark will be performed in a temporary system, and all traces will be deleted after that.
-Therefore, it has no impact on the original environment and supports almost all linux systems.
+测试将在临时系统中进行，结束后会清理所有痕迹。
+因此对原系统无影响，支持几乎所有 Linux 系统。
 
-Author: ETDATA
-Github: github.com/jyogyou/NodeQuality
-Command: bash <(curl -sL https://test.etdata.link)
+作者：ETDATA
+GitHub：github.com/jyogyou/NodeQuality
+命令：bash <(curl -sL https://test.etdata.link)
 
 	EOF
     echo -ne "\033[0m"
@@ -89,7 +89,7 @@ function pre_cleanup(){
     if [[ "$work_dir" == *"nodequality"* ]]; then
         rm -rf "${work_dir}"/*
     else
-        echo "Error: work_dir does not contain 'nodequality'!"
+        echo "错误：work_dir 不包含 'nodequality'！"
         exit 1
     fi
 }
@@ -189,7 +189,7 @@ function post_cleanup(){
     if [[ "$work_dir" == *"nodequality"* ]]; then
         rm -rf "${work_dir}"/
     else
-        echo "Error: work_dir does not contain 'nodequality'!"
+        echo "错误：work_dir 不包含 'nodequality'！"
         exit 1
     fi
 
@@ -198,7 +198,7 @@ function post_cleanup(){
 
 function sig_cleanup(){
     trap '' INT TERM SIGHUP EXIT
-    _red "Cleaning, please wait a moment."
+    _red "正在清理，请稍候。"
     post_cleanup
 }
 
@@ -214,19 +214,19 @@ function ask_question(){
     yellow='\033[1;33m'  # Set yellow color
     reset='\033[0m'      # Reset to default color
 
-    echo -en "${yellow}Run Basic Info test? (Enter for default 'y') [y/n]: ${reset}"
+    echo -en "${yellow}运行基础信息测试？（回车默认 y）[y/n]: ${reset}"
     read run_yabs_test
     run_yabs_test=${run_yabs_test:-y}
 
-    echo -en "${yellow}Run IPQuality test? (Enter for default 'y') [y/n]: ${reset}"
+    echo -en "${yellow}运行 IP 质量测试？（回车默认 y）[y/n]: ${reset}"
     read run_ip_quality_test
     run_ip_quality_test=${run_ip_quality_test:-y}
 
-    echo -en "${yellow}Run NetQuality test? (Enter for default 'y', 'l' for low-data mode) [y/l/n]: ${reset}"
+    echo -en "${yellow}运行网络质量测试？（回车默认 y，l 为低流量模式）[y/l/n]: ${reset}"
     read run_net_quality_test
     run_net_quality_test=${run_net_quality_test:-y}
 
-    echo -en "${yellow}Run Backroute Trace test? (Enter for default 'y') [y/n]: ${reset}"
+    echo -en "${yellow}运行回程路由测试？（回车默认 y）[y/n]: ${reset}"
     read run_net_trace_test
     run_net_trace_test=${run_net_trace_test:-y}
 }
@@ -238,42 +238,42 @@ function main(){
 
     ask_question
 
-    _green_bold 'Clean Up before Installation'
+    _green_bold '安装前清理'
     pre_init
     pre_cleanup
-    _green_bold 'Load BenchOs'
+    _green_bold '加载 BenchOS'
     load_bench_os
 
     load_part
     load_3rd_program
-    _green_bold 'Basic Info'
+    _green_bold '基础信息'
 
     result_directory=$work_dir/BenchOs/result
     mkdir -p $result_directory
     run_header > $result_directory/$header_info_filename
 
     if [[ "$run_yabs_test" =~ ^[Yy]$ ]]; then
-        _green_bold 'Running Basic Info Test...'
+    _green_bold '正在运行基础信息测试...'
         run_yabs | tee $result_directory/$basic_info_filename
     fi
 
     if [[ "$run_ip_quality_test" =~ ^[Yy]$ ]]; then
-        _green_bold 'Running IP Quality Test...'
+    _green_bold '正在运行 IP 质量测试...'
         run_ip_quality | tee $result_directory/$ip_quality_filename
     fi
 
     if [[ "$run_net_quality_test" =~ ^[YyLl]$ ]]; then
-        _green_bold 'Running Network Quality Test...'
+    _green_bold '正在运行网络质量测试...'
         run_net_quality | tee $result_directory/$net_quality_filename
     fi
 
     if [[ "$run_net_trace_test" =~ ^[Yy]$ ]]; then
-        _green_bold 'Running Backroute Trace...'
+    _green_bold '正在运行回程路由测试...'
         run_net_trace | tee $result_directory/$backroute_trace_filename
     fi
 
     upload_result
-    _green_bold 'Clean Up after Installation'
+    _green_bold '安装后清理'
     post_cleanup
 }
 
