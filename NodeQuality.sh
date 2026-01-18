@@ -155,17 +155,17 @@ function run_yabs(){
 }
 
 function run_ip_quality(){
-    chroot_run bash <(curl -Ls IP.Check.Place) -n -o /result/$ip_quality_json_filename
+    chroot_run bash <(curl -Ls "$raw_file_prefix/part/ip_check.sh") -n -o /result/$ip_quality_json_filename
 }
 
 function run_net_quality(){
     local params=""
     [[ "$run_net_quality_test" =~ ^[Ll]$ ]] && params=" -L"
-    chroot_run bash <(curl -Ls Net.Check.Place) $params -n -o /result/$net_quality_json_filename
+    chroot_run bash <(curl -Ls "$raw_file_prefix/part/net_check.sh") $params -n -o /result/$net_quality_json_filename
 }
 
 function run_net_trace(){
-    chroot_run bash <(curl -Ls Net.Check.Place) -R -n -S 123 -o /result/$backroute_trace_json_filename
+    chroot_run bash <(curl -Ls "$raw_file_prefix/part/net_check.sh") -R -n -S 123 -o /result/$backroute_trace_json_filename
 }
 
 uploadAPI="https://test.etdata.link/api/v1/record"
